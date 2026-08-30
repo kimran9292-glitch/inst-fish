@@ -1,14 +1,14 @@
 {
   "name": "instagram-auth-backend",
   "version": "1.0.0",
-  "description": "Простой бэкенд для страницы входа/регистрации в стиле Instagram",
+  "description": "Бэкенд для страницы входа/регистрации с облачной базой данных",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "better-sqlite3": "^11.3.0",
+    "@libsql/client": "^0.14.0",
     "cors": "^2.8.5"
   }
 }
