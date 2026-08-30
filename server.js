@@ -7,7 +7,7 @@ const { createClient } = require("@libsql/client");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ---------- База данных (Turso — облачная, постоянная) ----------
+// ---------- База данных Turso ----------
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
@@ -28,23 +28,7 @@ async function initDb() {
     )
   `);
 
-  // Если таблица users уже существовала до добавления новых полей,
-  // добавляем их отдельно.
-  try {
-    await db.execute(`
-      ALTER TABLE users ADD COLUMN last_login TEXT
-    `);
-  } catch (err) {
-    // Поле уже существует — ничего не делаем
-  }
-
-  try {
-    await db.execute(`
-      ALTER TABLE users ADD COLUMN login_count INTEGER DEFAULT 0
-    `);
-  } catch (err) {
-    // Поле уже существует — ничего не делаем
-  }
+  console.log("База данных успешно подключена.");
 }
 
 // ---------- Middleware ----------
@@ -93,7 +77,7 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
-    // Создаем пользователя
+    // Создаём пользователя
     const result = await db.execute({
       sql: `
         INSERT INTO users
@@ -106,7 +90,7 @@ app.post("/api/register", async (req, res) => {
     res.json({
       success: true,
       id: Number(result.lastInsertRowid),
-      username
+      username: username
     });
 
   } catch (err) {
@@ -148,7 +132,7 @@ app.post("/api/login", async (req, res) => {
 
     const user = result.rows[0];
 
-    // ---------- СОХРАНЯЕМ ФАКТ АВТОРИЗАЦИИ ----------
+    // ---------- Сохраняем факт авторизации ----------
     await db.execute({
       sql: `
         UPDATE users
@@ -160,7 +144,7 @@ app.post("/api/login", async (req, res) => {
       args: [user.id],
     });
 
-    // Получаем уже обновленного пользователя
+    // Получаем обновлённые данные
     const updatedUser = await db.execute({
       sql: `
         SELECT
@@ -179,7 +163,6 @@ app.post("/api/login", async (req, res) => {
 
     const savedUser = updatedUser.rows[0];
 
-    // Отправляем данные клиенту
     res.json({
       success: true,
       user: {
@@ -251,20 +234,24 @@ app.delete("/api/users/:id", async (req, res) => {
   }
 });
 
+// ---------- Проверка сервера ----------
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Сервер работает"
+  });
+});
+
 // ---------- Запуск ----------
 initDb()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Сервер запущен на порту ${PORT}`);
-      console.log(`База данных: Turso (облачная, постоянная)`);
+      console.log("База данных: Turso");
     });
   })
   .catch((err) => {
-    console.error(
-      "Не удалось подключиться к базе данных:",
-      err
-    );
-
+    console.error("Не удалось подключиться к базе данных:", err);
     process.exit(1);
   });
 ```
