@@ -126,7 +126,7 @@ app.post("/api/login", async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(401).json({
-        error: "Неверное имя пользователя или пароль."
+        error: "Неверное имя пользователя или пароль!"
       });
     }
 
