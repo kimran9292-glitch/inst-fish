@@ -28,7 +28,7 @@ async function initDb() {
     )
   `);
 
-  console.log("База данных успешно подключена.");
+  console.log("База данных успешнo подключена.");
 }
 
 // ---------- Middleware ----------
